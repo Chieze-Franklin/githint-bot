@@ -1,0 +1,7 @@
+build
+node_modules
+.env
+.DS_Store
+.vscode
+private.md
+todo.txt
