@@ -12,11 +12,11 @@ module.exports = app => {
     const startTime = new Date()
 
     // Do stuff
-    console.log(context.payload.check_suite)
+    console.log(context.payload.action)
     const { head_branch: headBranch, head_sha: headSha } = context.payload.check_suite
     // Probot API note: context.repo() => {username: 'hiimbex', repo: 'testing-things'}
     return context.github.checks.create(context.repo({
-      name: 'My app!',
+      name: 'PRLint Bot',
       head_branch: headBranch,
       head_sha: headSha,
       status: 'completed',
@@ -24,7 +24,7 @@ module.exports = app => {
       conclusion: 'success',
       completed_at: new Date(),
       output: {
-        title: 'Probot check!',
+        title: 'PR is convention-compliant!',
         summary: 'The check has passed!'
       }
     }))
