@@ -7,15 +7,26 @@
  */
 module.exports = app => {
   app.on(['check_suite.requested', 'check_run.rerequested'], check)
+  //app.on(['check_suite.requested'], check)
 
   async function check (context) {
     const startTime = new Date()
+
+    // get the .prlint file
+      // return a failed test if the file can't be gotten or is invalid
+    // construct the PR object
+    // run each check
+      // report each check that fails
+      // if no check failed report all checks passed
+    // consider giving users the power to specify the shape of the PR object
+
+    console.log(context.payload.check_run)
 
     // Do stuff
     const { head_branch: headBranch, head_sha: headSha } = context.payload.check_suite
     // Probot API note: context.repo() => {username: 'hiimbex', repo: 'testing-things'}
     context.github.checks.create(context.repo({
-      name: 'PRLint Bot',
+      name: 'Awesome',
       head_branch: headBranch,
       head_sha: headSha,
       status: 'queued',
@@ -29,7 +40,7 @@ module.exports = app => {
     }))
     setTimeout(() => {
       return context.github.checks.create(context.repo({
-        name: 'PRLint Bot',
+        name: 'PRLint Server',
         head_branch: headBranch,
         head_sha: headSha,
         status: 'completed',
@@ -41,7 +52,7 @@ module.exports = app => {
           summary: 'The check has passed!'
         }
       }))
-    }, 15000)
+    }, 30000)
   }
 
   // For more information on building apps:
