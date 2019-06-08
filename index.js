@@ -12,22 +12,36 @@ module.exports = app => {
     const startTime = new Date()
 
     // Do stuff
-    console.log(context.payload.action)
     const { head_branch: headBranch, head_sha: headSha } = context.payload.check_suite
     // Probot API note: context.repo() => {username: 'hiimbex', repo: 'testing-things'}
-    return context.github.checks.create(context.repo({
+    context.github.checks.create(context.repo({
       name: 'PRLint Bot',
       head_branch: headBranch,
       head_sha: headSha,
-      status: 'completed',
+      status: 'queued',
       started_at: startTime,
       conclusion: 'success',
       completed_at: new Date(),
       output: {
-        title: 'PR is convention-compliant!',
-        summary: 'The check has passed!'
+        title: 'Checking PR!',
+        summary: 'The check has running!'
       }
     }))
+    setTimeout(() => {
+      return context.github.checks.create(context.repo({
+        name: 'PRLint Bot',
+        head_branch: headBranch,
+        head_sha: headSha,
+        status: 'completed',
+        started_at: startTime,
+        conclusion: 'success',
+        completed_at: new Date(),
+        output: {
+          title: 'PR is convention-compliant!',
+          summary: 'The check has passed!'
+        }
+      }))
+    }, 15000)
   }
 
   // For more information on building apps:
