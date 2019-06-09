@@ -13,12 +13,8 @@ module.exports = app => {
   async function handleCheckEvents(context) {
     const startTime = new Date()
 
-    // construct the PR object
-    // construct the branch object
-      // this can help us presence of files (stick to the root directory for now)
-    // run each check
-      // report each check that fails
-      // if no check failed report all checks passed
+    // construct the tree object
+      // this can help check presence of files (stick to the root directory for now)
 
     // extract info
     const {
@@ -69,6 +65,32 @@ module.exports = app => {
         headBranch,
         headSha,
         object: commit,
+        startTime
+      });
+    }
+
+    // run branch checks
+    const { check: branchCheck, checkNames: branchCheckNames } = await getChecksToPerform({
+      checkType: 'branch',
+      checkRun,
+      prlintFile: prlintResponse.data
+    });
+    if (branchCheckNames && branchCheckNames.length > 0) {
+      // get the branch
+      var getBranchResponse = await context.github.repos.getBranch({
+        owner: repository.owner.login,
+        repo: repository.name,
+        branch: headBranch
+      });
+      const branch = { ...getBranchResponse.data };
+      checkObject(context, {
+        checkRun,
+        checkType: 'branch',
+        check: branchCheck,
+        checkNames: branchCheckNames,
+        headBranch,
+        headSha,
+        object: branch,
         startTime
       });
     }
