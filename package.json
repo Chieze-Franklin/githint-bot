@@ -10,7 +10,9 @@
   "keywords": [
     "probot",
     "github",
-    "probot-app"
+    "probot-app",
+    "prlint",
+    "prlint-server"
   ],
   "scripts": {
     "dev": "nodemon",
