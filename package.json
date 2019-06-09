@@ -1,18 +1,18 @@
 {
-  "name": "prlint-server",
+  "name": "PRLint",
   "version": "1.0.0",
   "description": "PRLint ensures that your pull requests follow specified conventions.",
   "author": "Franklin Chieze <chieze.franklin@gmail.com> (https://prlint.herokuapp.com)",
   "license": "ISC",
-  "repository": "https://github.com/prlint-server.git",
-  "homepage": "https://github.com/prlint-server",
-  "bugs": "https://github.com//prlint-server/issues",
+  "repository": "https://github.com/prlint-bot.git",
+  "homepage": "https://github.com/prlint-bot",
+  "bugs": "https://github.com//prlint-bot/issues",
   "keywords": [
     "probot",
     "github",
     "probot-app",
     "prlint",
-    "prlint-server"
+    "prlint-bot"
   ],
   "scripts": {
     "dev": "nodemon",
