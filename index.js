@@ -144,6 +144,12 @@ module.exports = app => {
     for (let i = 0; i < checkNames.length; i++) {
       const name = checkNames[i];
       let script = check[name];
+      let message = '';
+      // first, if script is an object get script from script.script
+      if (typeof script === 'object' && !Array.isArray(script)) {
+        message = script.message || message;
+        script = script.script;
+      }
       // if script is an array, join them
       if (Array.isArray(script)) {
         script = script.join("\n");
@@ -167,7 +173,7 @@ module.exports = app => {
             response.error
             ? response.error.message
             : `The check '${name}' ${response.data === true ? 'passed' : 'failed'}.`,
-          // text: "",
+          text: message,
           title: name
         });
       }
