@@ -1,5 +1,5 @@
 {
-  "name": "PRLint",
+  "name": "Ghapy",
   "version": "1.0.0",
   "description": "PRLint ensures that your pull requests follow specified conventions.",
   "author": "Franklin Chieze <chieze.franklin@gmail.com> (https://prlint.herokuapp.com)",

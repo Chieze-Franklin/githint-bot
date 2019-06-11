@@ -5,7 +5,7 @@ module.exports = {
   async getPrlintFile(owner, repo, branch) {
     try {
       let data = await request({
-        url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.prlintrc`,
+        url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.ghapy`,
         method: 'GET'
       });
       return { data: JSON.parse(data) };
