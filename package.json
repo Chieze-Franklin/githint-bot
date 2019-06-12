@@ -1,18 +1,18 @@
 {
-  "name": "Ghapy",
+  "name": "Ghint",
   "version": "1.0.0",
-  "description": "PRLint ensures that your pull requests follow specified conventions.",
-  "author": "Franklin Chieze <chieze.franklin@gmail.com> (https://prlint.herokuapp.com)",
+  "description": "ghint ensures that your pull requests follow specified conventions.",
+  "author": "Franklin Chieze <chieze.franklin@gmail.com> (https://ghint.herokuapp.com)",
   "license": "ISC",
-  "repository": "https://github.com/prlint-bot.git",
-  "homepage": "https://github.com/prlint-bot",
-  "bugs": "https://github.com//prlint-bot/issues",
+  "repository": "https://github.com/ghint-bot.git",
+  "homepage": "https://github.com/ghint-bot",
+  "bugs": "https://github.com/ghint-bot/issues",
   "keywords": [
     "probot",
     "github",
     "probot-app",
-    "prlint",
-    "prlint-bot"
+    "ghint",
+    "ghint-bot"
   ],
   "scripts": {
     "dev": "nodemon",
