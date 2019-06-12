@@ -31,15 +31,15 @@ module.exports = app => {
     }
     = checkSuite;
 
-    // get the .ghapy file
-    const ghapyResponse = await checkGhapyFile(context, {
+    // get the .ghint file
+    const ghintResponse = await checkGhintFile(context, {
       checkRun,
       headBranch,
       headSha,
       repository,
       startTime
     });
-    if (!ghapyResponse.data) {
+    if (!ghintResponse.data) {
       return;
     }
 
@@ -47,7 +47,7 @@ module.exports = app => {
     const { check: commitCheck, checkNames: commitCheckNames } = await getChecksToPerform({
       checkType: 'commit',
       checkRun,
-      ghapyFile: ghapyResponse.data
+      ghintFile: ghintResponse.data
     });
     if (commitCheckNames && commitCheckNames.length > 0) {
       // get the commit
@@ -73,7 +73,7 @@ module.exports = app => {
     const { check: branchCheck, checkNames: branchCheckNames } = await getChecksToPerform({
       checkType: 'branch',
       checkRun,
-      ghapyFile: ghapyResponse.data
+      ghintFile: ghintResponse.data
     });
     if (branchCheckNames && branchCheckNames.length > 0) {
       // get the branch
@@ -97,7 +97,7 @@ module.exports = app => {
 
     // ge the pr
     let prResponse = {};
-    if (ghapyResponse.data.checks && ghapyResponse.data.checks.pr) {
+    if (ghintResponse.data.checks && ghintResponse.data.checks.pr) {
       prResponse = await checkPr(context, {
         checkRun,
         headBranch,
@@ -112,13 +112,13 @@ module.exports = app => {
     const { check: prCheck, checkNames: prcheckNames } = await getChecksToPerform({
       checkType: 'pr',
       // if checkRun exists because PR was not detected, pass undefined
-      checkRun: checkRun && checkRun.name === 'Ghapy: check for pull request' ? undefined : checkRun,
-      ghapyFile: ghapyResponse.data
+      checkRun: checkRun && checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
+      ghintFile: ghintResponse.data
     });
     if (prResponse.data && prcheckNames && prcheckNames.length > 0) {
       const pr = { ...prResponse.data };
       checkObject(context, {
-        checkRun: checkRun && checkRun.name === 'Ghapy: check for pull request' ? undefined : checkRun,
+        checkRun: checkRun && checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
         checkType: 'pr',
         check: prCheck,
         checkNames: prcheckNames,
@@ -201,7 +201,7 @@ module.exports = app => {
         number: pr.number
       });
     }
-    const name = 'Ghapy: check for pull request'; // if u change this here, change it somewhere above (Ctrl+F)
+    const name = 'Ghint: check for pull request'; // if u change this here, change it somewhere above (Ctrl+F)
     if (!response.data || (checkRun && checkRun.name === name)) {
       postCheckResult(context, {
         name,
@@ -226,9 +226,9 @@ module.exports = app => {
     }
     return response;
   }
-  async function checkGhapyFile(context, {checkRun, headBranch, headSha, repository, startTime}) {
-    const response = await utils.getGhapyFile(repository.owner.login, repository.name, headBranch);
-    const name = 'Ghapy: check for .ghapy file';
+  async function checkGhintFile(context, {checkRun, headBranch, headSha, repository, startTime}) {
+    const response = await utils.getGhintFile(repository.owner.login, repository.name, headBranch);
+    const name = 'Ghint: check for .ghint file';
     if (!response.data || (checkRun && checkRun.name === name)) {
       postCheckResult(context, {
         name,
@@ -238,17 +238,17 @@ module.exports = app => {
         startTime,
         status: 'completed',
         summary: response.error ? response.error.message : `The check '${name}' passed.`,
-        // text: "There's supposed to be a .ghapy file in the root directory",
+        // text: "There's supposed to be a .ghint file in the root directory",
         title: name
       });
     }
     return response;
   }
 
-  async function getChecksToPerform({ checkType, checkRun, ghapyFile }) {
-    if (ghapyFile.checks && ghapyFile.checks[checkType]) {
-      // const { [checkType]: check } = ghapyFile.checks;
-      const check = ghapyFile.checks[checkType];
+  async function getChecksToPerform({ checkType, checkRun, ghintFile }) {
+    if (ghintFile.checks && ghintFile.checks[checkType]) {
+      // const { [checkType]: check } = ghintFile.checks;
+      const check = ghintFile.checks[checkType];
       let checkNames = Object.keys(check);
       if (checkRun) {
         let checkNameToReRun = checkNames.find(name => name === checkRun.name);

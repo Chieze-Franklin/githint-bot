@@ -2,10 +2,10 @@ const request = require('request-promise-native');
 const vm = require('vm');
 
 module.exports = {
-  async getGhapyFile(owner, repo, branch) {
+  async getGhintFile(owner, repo, branch) {
     try {
       let data = await request({
-        url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.ghapy`,
+        url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.ghint`,
         method: 'GET'
       });
       return { data: JSON.parse(data) };
