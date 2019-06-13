@@ -44,6 +44,7 @@ module.exports = app => {
     }
 
     // run commit checks
+    let commit;
     const { check: commitCheck, checkNames: commitCheckNames } = await getChecksToPerform({
       checkType: 'commit',
       checkRun,
@@ -56,7 +57,7 @@ module.exports = app => {
         repo: repository.name,
         sha: headSha
       });
-      const commit = { ...getCommitResponse.data };
+      commit = { ...getCommitResponse.data };
       checkObject(context, {
         checkRun,
         checkType: 'commit',
@@ -65,6 +66,33 @@ module.exports = app => {
         headBranch,
         headSha,
         object: commit,
+        startTime
+      });
+    }
+
+    // run tree checks
+    const { check: treeCheck, checkNames: treeCheckNames } = await getChecksToPerform({
+      checkType: 'tree',
+      checkRun,
+      ghintFile: ghintResponse.data
+    });
+    if (commit && treeCheckNames && treeCheckNames.length > 0) {
+      // get the tree
+      var getTreeResponse = await context.github.gitdata.getTree({
+        owner: repository.owner.login,
+        repo: repository.name,
+        tree_sha: commit.commit.tree.sha,
+        recursive: 1
+      });
+      tree = { ...getTreeResponse.data };
+      checkObject(context, {
+        checkRun,
+        checkType: 'tree',
+        check: treeCheck,
+        checkNames: treeCheckNames,
+        headBranch,
+        headSha,
+        object: tree,
         startTime
       });
     }
