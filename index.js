@@ -13,9 +13,6 @@ module.exports = app => {
   async function handleCheckEvents(context) {
     const startTime = new Date()
 
-    // construct the tree object
-      // this can help check presence of files (stick to the root directory for now)
-
     // extract info
     const {
       check_run: checkRun,
