@@ -36,9 +36,35 @@ module.exports = app => {
       repository,
       startTime
     });
-    if (!ghintResponse.data) {
+    if (!ghintResponse.data || !ghintResponse.data.checks) {
       return;
     }
+    const ghintFile = ghintResponse.data;
+    const options = ghintFile.options || {};
+
+    // get the pull
+    let pullResponse = {};
+    pullResponse = await checkPull(context, {
+      checkRun,
+      headBranch,
+      headSha,
+      options,
+      pull: pullRequests[0],
+      repository,
+      startTime
+    });
+    if (!pullResponse.data && options.detectPull) {
+      return;
+    }
+    const pull = pullResponse.data;
+
+    // get the branch
+    var getBranchResponse = await context.github.repos.getBranch({
+      owner: repository.owner.login,
+      repo: repository.name,
+      branch: headBranch
+    });
+    const branch = { ...getBranchResponse.data };
 
     // get the commit
     var getCommitResponse = await context.github.repos.getCommit({
@@ -47,142 +73,66 @@ module.exports = app => {
       sha: headSha
     });
     const commit = { ...getCommitResponse.data };
-    // run commit checks
-    const { check: commitCheck, checkNames: commitCheckNames } = await getChecksToPerform({
-      checkType: 'commit',
-      checkRun,
-      ghintFile: ghintResponse.data
-    });
-    if (commitCheckNames && commitCheckNames.length > 0) {
-      checkObject(context, {
-        checkRun,
-        checkType: 'commit',
-        check: commitCheck,
-        checkNames: commitCheckNames,
-        headBranch,
-        headSha,
-        object: commit,
-        startTime
-      });
-    }
 
-    // run tree checks
-    const { check: treeCheck, checkNames: treeCheckNames } = await getChecksToPerform({
-      checkType: 'tree',
-      checkRun,
-      ghintFile: ghintResponse.data
+    // get the tree
+    var getTreeResponse = await context.github.gitdata.getTree({
+      owner: repository.owner.login,
+      repo: repository.name,
+      tree_sha: commit.commit.tree.sha,
+      recursive: 1
     });
-    if (treeCheckNames && treeCheckNames.length > 0) {
-      // get the tree
-      var getTreeResponse = await context.github.gitdata.getTree({
-        owner: repository.owner.login,
-        repo: repository.name,
-        tree_sha: commit.commit.tree.sha,
-        recursive: 1
-      });
-      tree = { ...getTreeResponse.data };
-      checkObject(context, {
-        checkRun,
-        checkType: 'tree',
-        check: treeCheck,
-        checkNames: treeCheckNames,
-        headBranch,
-        headSha,
-        object: tree,
-        startTime
-      });
-    }
+    const tree = { ...getTreeResponse.data };
 
-    // run branch checks
-    const { check: branchCheck, checkNames: branchCheckNames } = await getChecksToPerform({
-      checkType: 'branch',
-      checkRun,
-      ghintFile: ghintResponse.data
+    // run checks
+    const checkNames = await getChecksToPerform({
+      checkRun: checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
+      ghintFile
     });
-    if (branchCheckNames && branchCheckNames.length > 0) {
-      // get the branch
-      var getBranchResponse = await context.github.repos.getBranch({
-        owner: repository.owner.login,
-        repo: repository.name,
-        branch: headBranch
-      });
-      const branch = { ...getBranchResponse.data };
-      checkObject(context, {
-        checkRun,
-        checkType: 'branch',
-        check: branchCheck,
-        checkNames: branchCheckNames,
+    if (checkNames.length > 0) {
+      runChecks(context, {
+        checkRun: checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
+        checkNames,
+        ghintFile,
         headBranch,
         headSha,
-        object: branch,
-        startTime
-      });
-    }
-
-    // ge the pr
-    let prResponse = {};
-    if (ghintResponse.data.checks && ghintResponse.data.checks.pr) {
-      prResponse = await checkPr(context, {
-        checkRun,
-        headBranch,
-        headSha,
-        pr: pullRequests[0],
-        repository,
-        startTime
-      });
-    }
-
-    // run pr checks
-    const { check: prCheck, checkNames: prcheckNames } = await getChecksToPerform({
-      checkType: 'pr',
-      // if checkRun exists because PR was not detected, pass undefined
-      checkRun: checkRun && checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
-      ghintFile: ghintResponse.data
-    });
-    if (prResponse.data && prcheckNames && prcheckNames.length > 0) {
-      const pr = { ...prResponse.data };
-      checkObject(context, {
-        checkRun: checkRun && checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
-        checkType: 'pr',
-        check: prCheck,
-        checkNames: prcheckNames,
-        headBranch,
-        headSha,
-        object: pr,
+        scope: {
+          branch,
+          commit,
+          pull,
+          tree
+        },
         startTime
       });
     }
   }
 
-  async function checkObject(context, {
+  async function runChecks(context, {
     checkRun,
-    checkType,
-    check,
     checkNames,
+    ghintFile,
     headBranch,
     headSha,
-    object,
+    scope,
     startTime
   }) {
     let allChecksPassed = true;
     for (let i = 0; i < checkNames.length; i++) {
       const name = checkNames[i];
-      let script = check[name];
+      let script = ghintFile.checks[name];
       let message = '';
       // first, if script is an object get script from script.script
       if (typeof script === 'object' && !Array.isArray(script)) {
         message = script.message || message;
-        script = script.script;
+        script = script.script || 'false';
       }
       // if script is an array, join them
       if (Array.isArray(script)) {
-        script = script.join("\n");
-      } else if (typeof script === 'string') {
-        script = `return (${script})`;
+        script = script.filter(line => !!(line.trim())).join("\n");
       }
-      const scope = {
-        [checkType]: object
-      };
+      // if script is string
+      else if (typeof script === 'string') {
+        script = `return ${script}`;
+      }
       const response = await utils.runScript(script, scope);
       allChecksPassed = allChecksPassed && response.data;
       if (!response.data || (checkRun && checkRun.name === name)) {
@@ -204,29 +154,29 @@ module.exports = app => {
     }
     if (allChecksPassed && !checkRun) {
       postCheckResult(context, {
-        name: `All ${checkType} checks passed`,
+        name: `All checks passed`,
         conclusion: 'success',
         headBranch,
         headSha,
         startTime,
         status: 'completed',
-        summary: `All ${checkType} checks passed.`,
+        summary: `All checks passed.`,
         // text: "",
-        title: `All ${checkType} checks passed`
+        title: `All checks passed`
       });
     }
   }
-  async function checkPr(context, {checkRun, headBranch, headSha, pr, repository, startTime}) {
+  async function checkPull(context, {checkRun, headBranch, headSha, options, pull, repository, startTime}) {
     let response = {};
-    if (pr) {
+    if (pull) {
       response = await context.github.pullRequests.get({
         owner: repository.owner.login,
         repo: repository.name,
-        number: pr.number
+        number: pull.number
       });
     }
     const name = 'Ghint: check for pull request'; // if u change this here, change it somewhere above (Ctrl+F)
-    if (!response.data || (checkRun && checkRun.name === name)) {
+    if ((!response.data && options.detectPull) || (checkRun && checkRun.name === name)) {
       postCheckResult(context, {
         name,
         conclusion: !response.data ? 'failure' : 'success',
@@ -269,11 +219,9 @@ module.exports = app => {
     return response;
   }
 
-  async function getChecksToPerform({ checkType, checkRun, ghintFile }) {
-    if (ghintFile.checks && ghintFile.checks[checkType]) {
-      // const { [checkType]: check } = ghintFile.checks;
-      const check = ghintFile.checks[checkType];
-      let checkNames = Object.keys(check);
+  async function getChecksToPerform({ checkRun, ghintFile }) {
+    if (ghintFile.checks) {
+      let checkNames = Object.keys(ghintFile.checks);
       if (checkRun) {
         let checkNameToReRun = checkNames.find(name => name === checkRun.name);
         if (checkNameToReRun) {
@@ -282,12 +230,9 @@ module.exports = app => {
           checkNames = [];
         }
       }
-      return ({
-        check,
-        checkNames
-      });
+      return checkNames;
     }
-    return ({});
+    return [];
   }
 
   async function postCheckResult (context, {
