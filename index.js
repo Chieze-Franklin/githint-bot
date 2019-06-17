@@ -116,12 +116,17 @@ module.exports = app => {
     startTime
   }) {
     let allChecksPassed = true;
+    let checksSkipped = 0;
     for (let i = 0; i < checkNames.length; i++) {
       const name = checkNames[i];
       let script = ghintFile.checks[name];
       let message = '';
       // first, if script is an object get script from script.script
       if (typeof script === 'object' && !Array.isArray(script)) {
+        if (script.skip === true) {
+          checksSkipped++;
+          continue;
+        }
         message = script.message || message;
         script = script.script || 'false';
         // if message is an array, join them
@@ -165,7 +170,7 @@ module.exports = app => {
         startTime,
         status: 'completed',
         summary: `All checks passed.`,
-        // text: "",
+        text: `${checksSkipped === 0 ? "No" : checksSkipped} check${checksSkipped < 2 ? " was" : "s were"} skipped.`,
         title: `All checks passed`
       });
     }
