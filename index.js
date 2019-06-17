@@ -115,7 +115,7 @@ module.exports = app => {
     scope,
     startTime
   }) {
-    let allChecksPassed = true;
+    let allChecksPassed = true;console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');console.log(scope)
     for (let i = 0; i < checkNames.length; i++) {
       const name = checkNames[i];
       let script = ghintFile.checks[name];
