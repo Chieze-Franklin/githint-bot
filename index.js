@@ -85,12 +85,12 @@ module.exports = app => {
 
     // run checks
     const checkNames = await getChecksToPerform({
-      checkRun: checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
+      checkRun: checkRun && checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
       ghintFile
     });
     if (checkNames.length > 0) {
       runChecks(context, {
-        checkRun: checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
+        checkRun: checkRun && checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
         checkNames,
         ghintFile,
         headBranch,
@@ -115,7 +115,7 @@ module.exports = app => {
     scope,
     startTime
   }) {
-    let allChecksPassed = true;console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');console.log(scope)
+    let allChecksPassed = true;
     for (let i = 0; i < checkNames.length; i++) {
       const name = checkNames[i];
       let script = ghintFile.checks[name];
