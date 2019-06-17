@@ -116,7 +116,7 @@ module.exports = app => {
     startTime
   }) {
     let allChecksPassed = true;
-    let checksSkipped = 0;
+    let skippedChecks = [];
     for (let i = 0; i < checkNames.length; i++) {
       const name = checkNames[i];
       let script = ghintFile.checks[name];
@@ -124,7 +124,7 @@ module.exports = app => {
       // first, if script is an object get script from script.script
       if (typeof script === 'object' && !Array.isArray(script)) {
         if (script.skip === true) {
-          checksSkipped++;
+          skippedChecks.push(name);
           continue;
         }
         message = script.message || message;
@@ -162,6 +162,7 @@ module.exports = app => {
       }
     }
     if (allChecksPassed && !checkRun) {
+      const checksSkipped = skippedChecks.length;
       postCheckResult(context, {
         name: `All checks passed`,
         conclusion: 'success',
@@ -169,8 +170,10 @@ module.exports = app => {
         headSha,
         startTime,
         status: 'completed',
-        summary: `All checks passed.`,
-        text: `${checksSkipped === 0 ? "No" : checksSkipped} check${checksSkipped < 2 ? " was" : "s were"} skipped.`,
+        summary: `All checks that were run passed.`,
+        text:
+          `${checksSkipped === 0 ? "No" : checksSkipped} check${checksSkipped < 2 ? " was" : "s were"} skipped.` +
+          `${checksSkipped === 0 ? "" : "\n" + skippedChecks.map(c => `  * ${c}`).join("\n")}`,
         title: `All checks passed`
       });
     }
