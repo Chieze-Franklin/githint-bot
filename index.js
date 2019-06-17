@@ -124,6 +124,10 @@ module.exports = app => {
       if (typeof script === 'object' && !Array.isArray(script)) {
         message = script.message || message;
         script = script.script || 'false';
+        // if message is an array, join them
+        if (Array.isArray(message)) {
+          message = message.join("\n");
+        }
       }
       // if script is an array, join them
       if (Array.isArray(script)) {
