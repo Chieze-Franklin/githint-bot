@@ -5,7 +5,7 @@ module.exports = {
   async getGhintFile(owner, repo, branch) {
     try {
       let data = await request({
-        url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.ghint`,
+        url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.ghint.json`,
         method: 'GET'
       });
       return { data: JSON.parse(data) };
