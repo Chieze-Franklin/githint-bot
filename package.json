@@ -1,5 +1,5 @@
 {
-  "name": "Ghint",
+  "name": "GitHint",
   "version": "1.0.0",
   "description": "ghint ensures that your pull requests follow specified conventions.",
   "author": "Franklin Chieze <chieze.franklin@gmail.com> (https://ghint.herokuapp.com)",
