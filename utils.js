@@ -10,7 +10,15 @@ module.exports = {
       });
       return { data: JSON.parse(data) };
     } catch (error) {
-      return { error };
+      try {
+        let data = await request({
+          url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.githint.json`,
+          method: 'GET'
+        });
+        return { data: JSON.parse(data) };
+      } catch (error) {
+        return { error };
+      }
     }
   },
   async runScript(source, scope) {
