@@ -28,19 +28,19 @@ module.exports = app => {
     }
     = checkSuite;
 
-    // get the .ghint file
-    const ghintResponse = await checkGhintFile(context, {
+    // get the .githint.json file
+    const gitHintResponse = await checkGitHintFile(context, {
       checkRun,
       headBranch,
       headSha,
       repository,
       startTime
     });
-    if (!ghintResponse.data || !ghintResponse.data.checks) {
+    if (!gitHintResponse.data || !gitHintResponse.data.checks) {
       return;
     }
-    const ghintFile = ghintResponse.data;
-    const options = ghintFile.options || {};
+    const gitHintFile = gitHintResponse.data;
+    const options = gitHintFile.options || {};
 
     // get the pull
     let pullResponse = {};
@@ -85,14 +85,14 @@ module.exports = app => {
 
     // run checks
     const checkNames = await getChecksToPerform({
-      checkRun: checkRun && checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
-      ghintFile
+      checkRun: checkRun && checkRun.name === 'GitHint: check for pull request' ? undefined : checkRun,
+      gitHintFile
     });
     if (checkNames.length > 0) {
       runChecks(context, {
-        checkRun: checkRun && checkRun.name === 'Ghint: check for pull request' ? undefined : checkRun,
+        checkRun: checkRun && checkRun.name === 'GitHint: check for pull request' ? undefined : checkRun,
         checkNames,
-        ghintFile,
+        gitHintFile,
         headBranch,
         headSha,
         scope: {
@@ -109,7 +109,7 @@ module.exports = app => {
   async function runChecks(context, {
     checkRun,
     checkNames,
-    ghintFile,
+    gitHintFile,
     headBranch,
     headSha,
     scope,
@@ -119,7 +119,7 @@ module.exports = app => {
     let skippedChecks = [];
     for (let i = 0; i < checkNames.length; i++) {
       const name = checkNames[i];
-      let script = ghintFile.checks[name];
+      let script = gitHintFile.checks[name];
       let message = '';
       // first, if script is an object get script from script.script
       if (typeof script === 'object' && !Array.isArray(script)) {
@@ -187,7 +187,7 @@ module.exports = app => {
         number: pull.number
       });
     }
-    const name = 'Ghint: check for pull request'; // if u change this here, change it somewhere above (Ctrl+F)
+    const name = 'GitHint: check for pull request'; // if u change this here, change it somewhere above (Ctrl+F)
     if ((!response.data && options.detectPull) || (checkRun && checkRun.name === name)) {
       postCheckResult(context, {
         name,
@@ -212,9 +212,9 @@ module.exports = app => {
     }
     return response;
   }
-  async function checkGhintFile(context, {checkRun, headBranch, headSha, repository, startTime}) {
-    const response = await utils.getGhintFile(repository.owner.login, repository.name, headBranch);
-    const name = 'Ghint: check for .ghint file';
+  async function checkGitHintFile(context, {checkRun, headBranch, headSha, repository, startTime}) {
+    const response = await utils.getGitHintFile(repository.owner.login, repository.name, headBranch);
+    const name = 'GitHint: check for .githint.json file';
     if (!response.data || (checkRun && checkRun.name === name)) {
       postCheckResult(context, {
         name,
@@ -224,16 +224,16 @@ module.exports = app => {
         startTime,
         status: 'completed',
         summary: response.error ? response.error.message : `The check '${name}' passed.`,
-        // text: "There's supposed to be a .ghint file in the root directory",
+        // text: "There's supposed to be a .githint.json file in the root directory",
         title: name
       });
     }
     return response;
   }
 
-  async function getChecksToPerform({ checkRun, ghintFile }) {
-    if (ghintFile.checks) {
-      let checkNames = Object.keys(ghintFile.checks);
+  async function getChecksToPerform({ checkRun, gitHintFile }) {
+    if (gitHintFile.checks) {
+      let checkNames = Object.keys(gitHintFile.checks);
       if (checkRun) {
         let checkNameToReRun = checkNames.find(name => name === checkRun.name);
         if (checkNameToReRun) {

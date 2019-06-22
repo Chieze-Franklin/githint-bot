@@ -2,7 +2,7 @@ const request = require('request-promise-native');
 const vm = require('vm');
 
 module.exports = {
-  async getGhintFile(owner, repo, branch) {
+  async getGitHintFile(owner, repo, branch) {
     try {
       let data = await request({
         url: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/.ghint.json`,
