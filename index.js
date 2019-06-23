@@ -56,7 +56,9 @@ module.exports = app => {
     if (!pullResponse.data && options.detectPull) {
       return;
     }
-    const pull = pullResponse.data;
+    const pull = await getPullInnerObjects(context, {
+      pull: pullResponse.data
+    });
 
     // get the branch
     var getBranchResponse = await context.github.repos.getBranch({
@@ -245,6 +247,22 @@ module.exports = app => {
       return checkNames;
     }
     return [];
+  }
+
+  async function getPullInnerObjects(context, { pull }) {
+    if (!pull) {
+      return;
+    }
+
+    // get the reviews
+    const reviewsResponse = await context.github.pullRequests.listReviews({
+      owner: pull.head.repo.owner.login,
+      repo: pull.head.repo.name,
+      number: pull.number
+    });
+    pull.reviews = reviewsResponse.data;
+
+    return pull;
   }
 
   async function postCheckResult (context, {
