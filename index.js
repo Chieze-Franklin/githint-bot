@@ -9,6 +9,12 @@ var utils = require('./utils');
  */
 module.exports = app => {
   app.on(['check_suite.requested', 'check_run.rerequested'], handleCheckEvents)
+  app.on(['installation.created', 'installation.deleted', 'installation_repositories.added', 'installation_repositories.removed'],
+    handleInstallationEvents)
+
+  async function handleInstallationEvents(context) {
+    console.log(context.payload)
+  }
 
   async function handleCheckEvents(context) {
     const startTime = new Date()
