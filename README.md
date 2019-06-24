@@ -7,3 +7,5 @@ There are conventions that may not be easily checked with tools like ESLint or H
 GitHint fetches metadata about pull requests, commits, branches, trees, and passes the metadata to user-defined scripts for evaluation. Such scripts are expected to return `true` or `false` to determine if a pull request is ready to be merged.
 
 To start using GitHint, first install the [GitHint GitHub app](https://github.com/apps/githint-bot) on your repository and add a [.githint.json file](https://githint.herokuapp.com/config) to the root directory of the repository. That's it!
+
+For more info visit the [documentation](https://githint.herokuapp.com/).
