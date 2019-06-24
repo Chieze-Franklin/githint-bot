@@ -1,6 +1,7 @@
 // Checks API example
 // See: https://developer.github.com/v3/checks/ to learn more
 
+var models = require('./database/models');
 var utils = require('./utils');
 
 /**
@@ -8,12 +9,75 @@ var utils = require('./utils');
  * @param {import('probot').Application} app
  */
 module.exports = app => {
-  app.on(['check_suite.requested', 'check_run.rerequested'], handleCheckEvents)
-  app.on(['installation.created', 'installation.deleted', 'installation_repositories.added', 'installation_repositories.removed'],
-    handleInstallationEvents)
+  app.on(['check_suite.requested', 'check_run.rerequested'], handleCheckEvents);
+  app.on([
+    'installation.created',
+    'installation.deleted',
+    'installation_repositories.added',
+    'installation_repositories.removed'
+  ],
+  handleInstallationEvents);
 
   async function handleInstallationEvents(context) {
-    console.log(context.payload)
+    try {
+      const { payload } = context;
+      if (context.name === 'installation') {
+        if (payload.action === 'created') {
+          const installation = await models.Installation.create({
+            id: payload.installation.id,
+            accessTokenUrl: payload.installation.access_tokens_url,
+            accountName: payload.installation.account.login,
+            accountType: payload.installation.account.type,
+            accountUrl: payload.installation.account.url,
+            targetId: payload.installation.target_id,
+            targetType: payload.installation.target_type,
+          });
+          if (installation) {
+            payload.repositories.forEach(async repo => {
+              const repository = await models.Repository.create({
+                id: repo.id,
+                fullName: repo.full_name,
+                installationId: installation.id,
+                name: repo.name,
+                private: repo.private,
+              });
+            });
+          }
+        } else if (payload.action === 'deleted') {
+          // deleting the installation will cascade delete its repos
+          await models.Installation.destroy({
+            where: {
+              id: payload.installation.id,
+            }
+          });
+        }
+      } else if (context.name === 'installation_repositories') {
+        payload.repositories_added.forEach(async repo => {
+          // just in case it already exists
+          // (which will be the case if payload.installation.repository_selection
+          // is changing from 'all' to 'selected')
+          let repository = await models.Repository.destroy({
+            where: {
+              id: repo.id,
+            }
+          });
+          repository = await models.Repository.create({
+            id: repo.id,
+            fullName: repo.full_name,
+            installationId: payload.installation.id,
+            name: repo.name,
+            private: repo.private,
+          });
+        });
+        payload.repositories_removed.forEach(async repo => {
+          const repository = await models.Repository.destroy({
+            where: {
+              id: repo.id,
+            }
+          });
+        });
+      }
+    } catch (e) {}
   }
 
   async function handleCheckEvents(context) {
