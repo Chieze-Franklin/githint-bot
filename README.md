@@ -1,4 +1,4 @@
-GitHint ensures that your pull requests follow specified conventions.
+[GitHint](https://github.com/apps/githint-bot) ensures that your pull requests follow specified conventions.
 
 ![](https://githint.herokuapp.com/images/screenshots/passing-tests.png)
 
@@ -6,6 +6,6 @@ There are conventions that may not be easily checked with tools like ESLint or H
 
 GitHint fetches metadata about pull requests, commits, branches, trees, and passes the metadata to user-defined scripts for evaluation. Such scripts are expected to return `true` or `false` to determine if a pull request is ready to be merged.
 
-To start using GitHint, first install the [GitHint GitHub app](https://github.com/apps/githint-bot) on your repository and add a [.githint.json file](https://githint.herokuapp.com/config) to the root directory of the repository. That's it!
+To start using GitHint, first [install the GitHint GitHub app](https://github.com/apps/githint-bot/installations/new) on your repository and add a [.githint.json file](https://githint.herokuapp.com/config) to the root directory of the repository. That's it!
 
 For more info visit the [documentation](https://githint.herokuapp.com/).
