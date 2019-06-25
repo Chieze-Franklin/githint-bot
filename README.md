@@ -1,6 +1,6 @@
 [GitHint](https://github.com/apps/githint-bot) ensures that your pull requests follow specified conventions.
 
-![](https://githint.herokuapp.com/images/screenshots/passing-tests.png)
+![](https://camo.githubusercontent.com/7dae22e63277199f47c25ad0911d03d83d6d937e/68747470733a2f2f67697468696e742e6865726f6b756170702e636f6d2f696d616765732f73637265656e73686f74732f70617373696e672d74657374732e706e67)
 
 There are conventions that may not be easily checked with tools like ESLint or Hound CI. These could range from arbitrary checks like `A pull request must be raised by a user whose first name is not more than 6 characters long` to more practical checks like `A pull request must have at least 2 review comments`. GitHint thrives on checking these kinds of conventions.
 
