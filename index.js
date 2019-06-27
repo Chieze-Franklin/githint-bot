@@ -215,19 +215,27 @@ module.exports = app => {
         script = `return ${script}`;
       }
       const response = await utils.runScript(script, scope);
-      allChecksPassed = allChecksPassed && response.data;
-      if (!response.data || (checkRun && checkRun.name === name)) {
+      let resData = response.data;
+      let resMessage;
+      if (response.data && typeof response.data === 'object') {
+        resData = response.data.result;
+        resMessage = response.data.message;
+      } else if (response.error) {
+        resMessage = response.error.message;
+      }
+      allChecksPassed = allChecksPassed && resData;
+      if (!resData || (checkRun && checkRun.name === name)) {
         postCheckResult(context, {
           name,
-          conclusion: !response.data ? 'failure' : 'success',
+          conclusion: !resData ? 'failure' : 'success',
           headBranch,
           headSha,
           startTime,
           status: 'completed',
           summary:
-            response.error
-            ? response.error.message
-            : `The check '${name}' ${response.data === true ? 'passed' : 'failed'}.`,
+            resMessage
+            ? resMessage
+            : `The check '${name}' ${resData === true ? 'passed' : 'failed'}.`,
           text: message,
           title: name
         });
