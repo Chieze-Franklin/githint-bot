@@ -9,6 +9,16 @@ var utils = require('./utils');
  * @param {import('probot').Application} app
  */
 module.exports = app => {
+  const router = app.route('/api');
+  router.get('/stats', async (req, res) => {
+    const installs = await models.Installation.count();
+    const repos = await models.Repository.count();
+    res.json({
+      installs,
+      repos
+    });
+  });
+
   app.on(['check_suite.requested', 'check_run.rerequested'], handleCheckEvents);
   app.on([
     'installation.created',
