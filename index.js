@@ -12,7 +12,7 @@ var utils = require('./utils');
  */
 module.exports = app => {
   const router = app.route('/api');
-  app.use(cors());
+  router.use(cors());
   router.get('/stats', async (req, res) => {
     const installs = await models.Installation.count();
     const repos = await models.Repository.count();
