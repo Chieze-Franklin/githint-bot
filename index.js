@@ -14,8 +14,10 @@ module.exports = app => {
     const installs = await models.Installation.count();
     const repos = await models.Repository.count();
     res.json({
-      installs,
-      repos
+      data: {
+        installs,
+        repos
+      }
     });
   });
 
