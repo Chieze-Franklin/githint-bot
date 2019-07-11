@@ -1,6 +1,8 @@
 // Checks API example
 // See: https://developer.github.com/v3/checks/ to learn more
 
+var cors = require('cors');
+
 var models = require('./database/models');
 var utils = require('./utils');
 
@@ -10,6 +12,7 @@ var utils = require('./utils');
  */
 module.exports = app => {
   const router = app.route('/api');
+  app.use(cors());
   router.get('/stats', async (req, res) => {
     const installs = await models.Installation.count();
     const repos = await models.Repository.count();
