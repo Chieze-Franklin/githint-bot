@@ -238,11 +238,8 @@ module.exports = app => {
       }
 
       if (typeof skip === 'string') {
-        console.log('skip:', `return ${skip}`)
         skip = await utils.runScript(`return ${skip}`, scope);
-        console.log('skip:', skip)
         skip = skip.data || false;
-        console.log('skip:', skip)
       }
       // decide if check is to be skipped
       if (skip === true) {
@@ -305,11 +302,8 @@ module.exports = app => {
     }
     let { detectPull } = options;
     if (typeof detectPull === 'string') {
-      console.log('detectPull:', `return ${detectPull}`)
       detectPull = await utils.runScript(`return ${detectPull}`, scope);
-      console.log('detectPull:', detectPull)
       detectPull = detectPull.data || false;
-      console.log('detectPull:', detectPull)
     }
     response.detectPull = detectPull;
     const name = 'GitHint: check for pull request'; // if u change this here, change it somewhere above (Ctrl+F)
