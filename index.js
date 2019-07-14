@@ -127,24 +127,6 @@ module.exports = app => {
     const gitHintFile = gitHintResponse.data;
     const options = gitHintFile.options || {};
 
-    // get the pull
-    let pullResponse = {};
-    pullResponse = await checkPull(context, {
-      checkRun,
-      headBranch,
-      headSha,
-      options,
-      pull: pullRequests[0],
-      repository,
-      startTime
-    });
-    if (!pullResponse.data && options.detectPull) {
-      return;
-    }
-    const pull = await getPullInnerObjects(context, {
-      pull: pullResponse.data
-    });
-
     // get the branch
     var getBranchResponse = await context.github.repos.getBranch({
       owner: repository.owner.login,
@@ -170,6 +152,29 @@ module.exports = app => {
     });
     const tree = { ...getTreeResponse.data };
 
+    // get the pull
+    let pullResponse = {};
+    pullResponse = await checkPull(context, {
+      checkRun,
+      headBranch,
+      headSha,
+      options,
+      pull: pullRequests[0],
+      repository,
+      scope: {
+        branch,
+        commit,
+        tree
+      },
+      startTime
+    });
+    if (!pullResponse.data && pullResponse.detectPull) {
+      return;
+    }
+    const pull = await getPullInnerObjects(context, {
+      pull: pullResponse.data
+    });
+
     // run checks
     const checkNames = await getChecksToPerform({
       checkRun: checkRun && checkRun.name === 'GitHint: check for pull request' ? undefined : checkRun,
@@ -182,6 +187,7 @@ module.exports = app => {
         gitHintFile,
         headBranch,
         headSha,
+        options,
         scope: {
           branch,
           commit,
@@ -199,6 +205,7 @@ module.exports = app => {
     gitHintFile,
     headBranch,
     headSha,
+    options,
     scope,
     startTime
   }) {
@@ -208,11 +215,11 @@ module.exports = app => {
       const name = checkNames[i];
       let script = gitHintFile.checks[name];
       let message = '';
+      let skip = options.skip || false;
       // first, if script is an object get script from script.script
       if (typeof script === 'object' && !Array.isArray(script)) {
-        if (script.skip === true) {
-          skippedChecks.push(name);
-          continue;
+        if (typeof script.skip !== 'undefined') {
+          skip = script.skip; // override any global skip
         }
         message = script.message || message;
         script = script.script || 'false';
@@ -229,6 +236,17 @@ module.exports = app => {
       else if (typeof script === 'string') {
         script = `return ${script}`;
       }
+
+      if (typeof skip === 'string') {
+        skip = await utils.runScript(`return ${skip}`, scope);
+        skip = skip.data || false;
+      }
+      // decide if check is to be skipped
+      if (skip === true) {
+        skippedChecks.push(name);
+        continue;
+      }
+
       const response = await utils.runScript(script, scope);
       let resData = response.data;
       let resMessage;
@@ -273,7 +291,7 @@ module.exports = app => {
       });
     }
   }
-  async function checkPull(context, {checkRun, headBranch, headSha, options, pull, repository, startTime}) {
+  async function checkPull(context, {checkRun, headBranch, headSha, options, pull, repository, scope, startTime}) {
     let response = {};
     if (pull) {
       response = await context.github.pullRequests.get({
@@ -282,8 +300,14 @@ module.exports = app => {
         number: pull.number
       });
     }
+    let { detectPull } = options;
+    if (typeof detectPull === 'string') {
+      detectPull = await utils.runScript(`return ${detectPull}`, scope);
+      detectPull = detectPull.data || false;
+    }
+    response.detectPull = detectPull;
     const name = 'GitHint: check for pull request'; // if u change this here, change it somewhere above (Ctrl+F)
-    if ((!response.data && options.detectPull) || (checkRun && checkRun.name === name)) {
+    if ((!response.data && detectPull) || (checkRun && checkRun.name === name)) {
       postCheckResult(context, {
         name,
         conclusion: !response.data ? 'failure' : 'success',
