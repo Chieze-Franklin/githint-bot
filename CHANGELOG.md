@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `/api/repos` endpoint
 - `/api/installs` endpoint
 
-## [1.1.0] - 2019-06-24
+## [1.1.0] - 2019-07-14
 ### Added
 - `options` can now have a field called `skip` which can be used to skip (or not skip) all checks
 ```json
