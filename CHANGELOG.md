@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `options` can now have a field called `skip` which can be used to skip (or not skip) all checks
 ```json
 {
-    "option": {
+    "options": {
         "detectPull": true,
         "skip": true
     }
@@ -30,7 +30,7 @@ to be JavaScript code snippets to be executed in the same manner checks are exec
 does not have access to the `pull` object.
 ```json
 {
-    "option": {
+    "options": {
         "detectPull": "commit.author.login.toLowerCase() !== 'greenkeeper[bot]'",
         "skip": "commit.author.login.toLowerCase() === 'greenkeeper[bot]'"
     }
