@@ -36,7 +36,7 @@ does not have access to the `pull` object.
     }
 }
 ```
-This will skip all checks (and not bother detecting a pull request object) is the author of the commit is the
+This will skip all checks (and not bother detecting a pull request object) if the author of the commit is the
 _greenkeeper_ bot.
 
 ## [1.0.0] - 2019-06-24
