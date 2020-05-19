@@ -3,7 +3,7 @@
 
 var cors = require('cors');
 var corsOptions = {
-  origin: "*"
+  origin: ["https://githint.herokuapp.com", "https://githint.herokuapp.com/"]
 };
 
 var models = require('./database/models');
